@@ -1,0 +1,16 @@
+/vendor/
+/node_modules/
+/.idea/
+/.vscode/
+/.vagrant/
+/.phpunit.result.cache
+.DS_Store
+Thumbs.db
+composer.lock
+.env
+.env.backup
+.phpunit.cache
+phpunit.xml
+.phpunit.result.cache
+coverage/
+.phpunit.cache/
