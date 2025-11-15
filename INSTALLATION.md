@@ -32,9 +32,11 @@ This will create two tables:
 
 ## Step 4: Access the Resources
 
-After installation, navigate to your Filament admin panel. You'll find two new menu items under the "Kanban" group:
-- **Boards** - Manage your kanban boards
-- **Issues** - Manage your issues/tasks
+After installation, navigate to your Filament admin panel. You'll find the following items under the "Kanban" group:
+- **Kanban Board** - Visual drag-and-drop board view for all issues
+- **My Issues** - Personal dashboard showing your assigned issues
+- **Boards** - Manage your kanban boards (CRUD)
+- **Issues** - Manage your issues/tasks (CRUD)
 
 ## Configuration Options
 
@@ -97,6 +99,22 @@ Edit `config/kanban.php`:
 
 ## Features Overview
 
+### Kanban Board View
+- Visual drag-and-drop interface for all boards
+- Switch between boards using the board selector
+- Drag issues between status columns to update their status
+- Real-time visual feedback when moving issues
+- Color-coded boards for easy identification
+- View issue details including priority, due dates, tags, and assignees
+
+### My Issues View
+- Personal dashboard for your assigned issues
+- Statistics cards showing counts by status and overdue items
+- Overdue issues alert section with detailed information
+- Dedicated kanban board showing only your issues
+- Drag and drop to update status
+- Navigation badge showing active issue count
+
 ### Board Management
 - Create multiple boards for different projects
 - Color-code boards for easy identification
@@ -117,9 +135,11 @@ Edit `config/kanban.php`:
 ### Advanced Features
 - **Soft Deletes**: Safely delete and restore records
 - **Inline Editing**: Update issue status directly from the table
+- **Drag and Drop**: Move issues between status columns visually
 - **Overdue Highlighting**: Visual indication for overdue issues
 - **Advanced Filters**: Filter by board, status, priority, overdue status
 - **Bulk Actions**: Perform actions on multiple records
+- **Dark Mode**: Full support for Filament's dark mode
 
 ## Troubleshooting
 

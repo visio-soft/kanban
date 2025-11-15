@@ -15,6 +15,8 @@ A comprehensive Kanban board and issue management plugin for FilamentPHP 3 using
 - 🔍 **Advanced Filtering**: Filter by status, priority, board, and overdue items
 - 🗑️ **Soft Deletes**: Safely delete and restore boards and issues
 - ⚙️ **Customizable**: Configure statuses, priorities, and colors
+- 🖼️ **Kanban Board View**: Visual drag-and-drop kanban board interface
+- 👤 **My Issues View**: Personal dashboard with assigned issues and overdue tracking
 
 ## Requirements
 
@@ -70,9 +72,27 @@ return [
 
 ## Usage
 
-After installation, two new resources will be available in your Filament admin panel:
+After installation, the following will be available in your Filament admin panel under the "Kanban" navigation group:
 
-### Boards
+### Kanban Board View
+
+A visual drag-and-drop interface showing all issues organized by status columns:
+- Switch between different boards using the board selector
+- Drag and drop issues between status columns to update their status
+- View issue details including priority, due dates, tags, and assigned users
+- Color-coded boards for easy identification
+- Real-time updates when moving issues
+
+### My Issues View
+
+Personal dashboard for viewing your assigned issues:
+- Statistics cards showing issue counts by status and overdue items
+- Separate kanban board showing only your assigned issues
+- Overdue issues alert section with detailed information
+- Drag and drop to update issue status
+- Visual priority badges and due date indicators
+
+### Boards Resource
 
 Create and manage your kanban boards with:
 - Custom names and descriptions
@@ -80,7 +100,7 @@ Create and manage your kanban boards with:
 - Order management
 - Active/inactive status
 
-### Issues
+### Issues Resource
 
 Manage your issues with:
 - Title and rich text description

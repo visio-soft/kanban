@@ -9,6 +9,13 @@ All notable changes to `kanban` will be documented in this file.
 - Board management with CRUD operations
 - Issue management with CRUD operations
 - FilamentPHP 3 resources for Boards and Issues
+- **Kanban Board View** - Visual drag-and-drop interface for managing issues
+- **My Issues View** - Personal dashboard with assigned issues and overdue tracking
+- Drag-and-drop functionality for updating issue status
+- Real-time visual feedback when moving issues
+- Statistics cards showing issue counts and overdue items
+- Overdue issues alert section
+- Board selector for switching between different boards
 - Configurable statuses and priorities
 - User assignment functionality
 - Tag support for issues
@@ -20,3 +27,4 @@ All notable changes to `kanban` will be documented in this file.
 - Priority badges
 - Overdue issue detection
 - Laravel 12 support
+- Dark mode support for all views
