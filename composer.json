@@ -1,5 +1,5 @@
 {
-    "name": "visiosoft/kanban",
+    "name": "visio/kanban",
     "description": "A FilamentPHP 3 plugin for Kanban boards and issue management",
     "type": "library",
     "license": "MIT",
@@ -13,7 +13,7 @@
     "authors": [
         {
             "name": "Visiosoft",
-            "email": "info@visiosoft.com"
+            "email": "info@visiosoft.com.tr"
         }
     ],
     "require": {
