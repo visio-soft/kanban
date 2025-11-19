@@ -15,13 +15,17 @@ class AllBoardsKanban extends Page
 
     protected static ?string $navigationGroup = 'Kanban';
 
-    protected static ?string $navigationLabel = 'Kanban Board';
+    protected static ?string $navigationLabel = 'Kanban Panosu';
 
-    protected static ?string $title = 'Kanban Board';
+    protected static ?string $title = 'Kanban Panosu';
 
     protected static ?int $navigationSort = 0;
 
     public ?int $selectedBoardId = null;
+
+    public ?int $selectedUserId = null;
+
+    public ?string $selectedPriority = null;
 
     public function mount(): void
     {
@@ -47,9 +51,11 @@ class AllBoardsKanban extends Page
             return null;
         }
 
-        return Board::with(['issues' => function ($query) {
-            $query->orderBy('order')->orderBy('created_at', 'desc');
-        }])
+        return Board::with([
+            'issues' => function ($query) {
+                $query->orderBy('order')->orderBy('created_at', 'desc');
+            },
+        ])
             ->find($this->selectedBoardId);
     }
 
@@ -59,9 +65,18 @@ class AllBoardsKanban extends Page
             return collect();
         }
 
-        return Issue::where('board_id', $this->selectedBoardId)
-            ->where('status', $status)
-            ->orderBy('order')
+        $query = Issue::where('board_id', $this->selectedBoardId)
+            ->where('status', $status);
+
+        if ($this->selectedUserId) {
+            $query->where('assigned_to', $this->selectedUserId);
+        }
+
+        if ($this->selectedPriority) {
+            $query->where('priority', $this->selectedPriority);
+        }
+
+        return $query->orderBy('order')
             ->orderBy('created_at', 'desc')
             ->with('assignedUser')
             ->get();
@@ -93,12 +108,37 @@ class AllBoardsKanban extends Page
         ]);
     }
 
-    public function getTitle(): string | Htmlable
+    public function getUsers()
+    {
+        $userModel = config('auth.providers.users.model');
+
+        return $userModel::whereHas('assignedIssues')
+            ->orderBy('name')
+            ->get();
+    }
+
+    public function getPriorities(): array
+    {
+        return config('kanban.priorities', [
+            'low' => 'Düşük',
+            'medium' => 'Orta',
+            'high' => 'Yüksek',
+            'urgent' => 'Acil',
+        ]);
+    }
+
+    public function clearFilters(): void
+    {
+        $this->selectedUserId = null;
+        $this->selectedPriority = null;
+    }
+
+    public function getTitle(): string|Htmlable
     {
         return '';
     }
 
-    public function getHeading(): string | Htmlable
+    public function getHeading(): string|Htmlable
     {
         return '';
     }

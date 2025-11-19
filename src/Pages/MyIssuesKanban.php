@@ -15,9 +15,9 @@ class MyIssuesKanban extends Page
 
     protected static ?string $navigationGroup = 'Kanban';
 
-    protected static ?string $navigationLabel = 'My Issues';
+    protected static ?string $navigationLabel = 'Görevlerim';
 
-    protected static ?string $title = 'My Issues';
+    protected static ?string $title = 'Görevlerim';
 
     protected static ?int $navigationSort = -1;
 
@@ -107,12 +107,12 @@ class MyIssuesKanban extends Page
         };
     }
 
-    public function getTitle(): string | Htmlable
+    public function getTitle(): string|Htmlable
     {
         return '';
     }
 
-    public function getHeading(): string | Htmlable
+    public function getHeading(): string|Htmlable
     {
         return '';
     }

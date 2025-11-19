@@ -10,11 +10,11 @@ return [
     |
     */
     'statuses' => [
-        'backlog' => 'Backlog',
-        'todo' => 'To Do',
-        'in_progress' => 'In Progress',
-        'review' => 'In Review',
-        'done' => 'Done',
+        'backlog' => 'Beklemede',
+        'todo' => 'Yapılacak',
+        'in_progress' => 'Devam Ediyor',
+        'review' => 'İncelemede',
+        'done' => 'Tamamlandı',
     ],
 
     /*
@@ -26,10 +26,10 @@ return [
     |
     */
     'priorities' => [
-        'low' => 'Low',
-        'medium' => 'Medium',
-        'high' => 'High',
-        'urgent' => 'Urgent',
+        'low' => 'Düşük',
+        'medium' => 'Orta',
+        'high' => 'Yüksek',
+        'urgent' => 'Acil',
     ],
 
     /*

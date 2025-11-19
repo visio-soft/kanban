@@ -18,6 +18,12 @@ class BoardResource extends Resource
 
     protected static ?string $navigationGroup = 'Kanban';
 
+    protected static ?string $navigationLabel = 'Panolar';
+
+    protected static ?string $modelLabel = 'Pano';
+
+    protected static ?string $pluralModelLabel = 'Panolar';
+
     protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
@@ -27,24 +33,29 @@ class BoardResource extends Resource
                 Forms\Components\Section::make()
                     ->schema([
                         Forms\Components\TextInput::make('name')
+                            ->label('Pano Adı')
                             ->required()
                             ->maxLength(255)
                             ->columnSpan('full'),
 
                         Forms\Components\Textarea::make('description')
+                            ->label('Açıklama')
                             ->rows(3)
                             ->columnSpan('full'),
 
                         Forms\Components\ColorPicker::make('color')
+                            ->label('Renk')
                             ->default(config('kanban.default_board_color', '#3b82f6'))
                             ->required(),
 
                         Forms\Components\TextInput::make('order')
+                            ->label('Sıra')
                             ->numeric()
                             ->default(0)
                             ->required(),
 
                         Forms\Components\Toggle::make('is_active')
+                            ->label('Aktif')
                             ->default(true)
                             ->required(),
                     ])
@@ -57,35 +68,41 @@ class BoardResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\ColorColumn::make('color')
-                    ->label('Color'),
+                    ->label('Renk'),
 
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Pano Adı')
                     ->searchable()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('description')
+                    ->label('Açıklama')
                     ->limit(50)
                     ->toggleable(),
 
                 Tables\Columns\TextColumn::make('issues_count')
                     ->counts('issues')
-                    ->label('Issues')
+                    ->label('Görevler')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('order')
+                    ->label('Sıra')
                     ->numeric()
                     ->sortable(),
 
                 Tables\Columns\IconColumn::make('is_active')
+                    ->label('Aktif')
                     ->boolean()
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Oluşturulma')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Güncellenme')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -94,10 +111,10 @@ class BoardResource extends Resource
             ->filters([
                 Tables\Filters\TrashedFilter::make(),
                 Tables\Filters\TernaryFilter::make('is_active')
-                    ->label('Active')
+                    ->label('Durum')
                     ->boolean()
-                    ->trueLabel('Active only')
-                    ->falseLabel('Inactive only')
+                    ->trueLabel('Sadece aktif')
+                    ->falseLabel('Sadece pasif')
                     ->native(false),
             ])
             ->actions([

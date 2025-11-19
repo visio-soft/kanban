@@ -2,40 +2,54 @@
 
 namespace Visiosoft\Kanban;
 
-use Filament\Support\Assets\Css;
-use Filament\Support\Facades\FilamentAsset;
-use Spatie\LaravelPackageTools\Package;
-use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Filament\Facades\Filament;
+use Illuminate\Support\ServiceProvider;
 use Visiosoft\Kanban\Pages\AllBoardsKanban;
 use Visiosoft\Kanban\Pages\MyIssuesKanban;
 use Visiosoft\Kanban\Resources\BoardResource;
 use Visiosoft\Kanban\Resources\IssueResource;
 
-class KanbanServiceProvider extends PackageServiceProvider
+class KanbanServiceProvider extends ServiceProvider
 {
-    public function configurePackage(Package $package): void
+    public function register(): void
     {
-        $package
-            ->name('kanban')
-            ->hasConfigFile()
-            ->hasViews()
-            ->hasMigrations([
-                'create_boards_table',
-                'create_issues_table',
-            ]);
+        $this->mergeConfigFrom(
+            __DIR__.'/../config/kanban.php',
+            'kanban'
+        );
     }
 
-    public function packageBooted(): void
+    public function boot(): void
     {
-        // Register Filament resources and pages
-        if (class_exists(\Filament\Facades\Filament::class)) {
-            \Filament\Facades\Filament::serving(function () {
-                \Filament\Facades\Filament::registerResources([
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'kanban');
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__.'/../config/kanban.php' => config_path('kanban.php'),
+            ], 'kanban-config');
+
+            $this->publishes([
+                __DIR__.'/../database/migrations/' => database_path('migrations'),
+            ], 'kanban-migrations');
+
+            $this->publishes([
+                __DIR__.'/../database/seeders/' => database_path('seeders'),
+            ], 'kanban-seeders');
+
+            $this->publishes([
+                __DIR__.'/../resources/views' => resource_path('views/vendor/kanban'),
+            ], 'kanban-views');
+        }
+
+        if (class_exists(Filament::class)) {
+            Filament::serving(function () {
+                Filament::registerResources([
                     BoardResource::class,
                     IssueResource::class,
                 ]);
 
-                \Filament\Facades\Filament::registerPages([
+                Filament::registerPages([
                     AllBoardsKanban::class,
                     MyIssuesKanban::class,
                 ]);
