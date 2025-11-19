@@ -15,9 +15,9 @@ class AllBoardsKanban extends Page
 
     protected static ?string $navigationGroup = 'Kanban';
 
-    protected static ?string $navigationLabel = 'Kanban Board';
+    protected static ?string $navigationLabel = 'Kanban Panosu';
 
-    protected static ?string $title = 'Kanban Board';
+    protected static ?string $title = 'Kanban Panosu';
 
     protected static ?int $navigationSort = 0;
 
@@ -43,19 +43,21 @@ class AllBoardsKanban extends Page
 
     public function getSelectedBoard()
     {
-        if (!$this->selectedBoardId) {
+        if (! $this->selectedBoardId) {
             return null;
         }
 
-        return Board::with(['issues' => function ($query) {
-            $query->orderBy('order')->orderBy('created_at', 'desc');
-        }])
+        return Board::with([
+            'issues' => function ($query) {
+                $query->orderBy('order')->orderBy('created_at', 'desc');
+            },
+        ])
             ->find($this->selectedBoardId);
     }
 
     public function getIssuesByStatus(string $status)
     {
-        if (!$this->selectedBoardId) {
+        if (! $this->selectedBoardId) {
             return collect();
         }
 
@@ -93,12 +95,12 @@ class AllBoardsKanban extends Page
         ]);
     }
 
-    public function getTitle(): string | Htmlable
+    public function getTitle(): string|Htmlable
     {
         return '';
     }
 
-    public function getHeading(): string | Htmlable
+    public function getHeading(): string|Htmlable
     {
         return '';
     }
