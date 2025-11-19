@@ -16,6 +16,49 @@
             @endforeach
         </div>
 
+        {{-- Filters Section --}}
+        <div
+            class="flex items-center gap-3 flex-wrap bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z">
+                    </path>
+                </svg>
+                <span class="font-medium">Filtreler:</span>
+            </div>
+
+            {{-- Assigned To Filter --}}
+            <select wire:model.live="selectedUserId"
+                class="text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <option value="">Tüm Kullanıcılar</option>
+                @foreach($this->getUsers() as $user)
+                    <option value="{{ $user->id }}">{{ $user->name }}</option>
+                @endforeach
+            </select>
+
+            {{-- Priority Filter --}}
+            <select wire:model.live="selectedPriority"
+                class="text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <option value="">Tüm Öncelikler</option>
+                @foreach($this->getPriorities() as $key => $label)
+                    <option value="{{ $key }}">{{ $label }}</option>
+                @endforeach
+            </select>
+
+            {{-- Clear Filters Button --}}
+            @if($selectedUserId || $selectedPriority)
+                <button wire:click="clearFilters"
+                    class="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium flex items-center gap-1 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                    Filtreleri Temizle
+                </button>
+            @endif
+        </div>
+
         @if ($this->getSelectedBoard())
             {{-- Board Description --}}
             @if ($this->getSelectedBoard()->description)
@@ -36,19 +79,19 @@
             {{-- Kanban Board with Enhanced Design --}}
             <div class="grid gap-4 overflow-x-auto pb-4"
                 style="grid-template-columns: repeat({{ count($this->getStatuses()) }}, minmax(320px, 1fr));" x-data="{
-                                            draggedIssue: null,
-                                            draggedFromStatus: null
-                                        }">
+                                                draggedIssue: null,
+                                                draggedFromStatus: null
+                                            }">
                 @foreach ($this->getStatuses() as $statusKey => $statusLabel)
                     <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 min-h-[600px] border-2 border-gray-200 dark:border-gray-700 transition-all duration-200"
                         x-on:dragover.prevent="$el.classList.add('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20', 'scale-[1.02]')"
                         x-on:dragleave="$el.classList.remove('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20', 'scale-[1.02]')"
                         x-on:drop="
-                                                                            $el.classList.remove('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20', 'scale-[1.02]');
-                                                                            if (draggedIssue && draggedFromStatus !== '{{ $statusKey }}') {
-                                                                                $wire.updateIssueStatus(draggedIssue, '{{ $statusKey }}');
-                                                                            }
-                                                                        ">
+                                                                                    $el.classList.remove('border-primary-500', 'bg-primary-50', 'dark:bg-primary-900/20', 'scale-[1.02]');
+                                                                                    if (draggedIssue && draggedFromStatus !== '{{ $statusKey }}') {
+                                                                                        $wire.updateIssueStatus(draggedIssue, '{{ $statusKey }}');
+                                                                                    }
+                                                                                ">
                         {{-- Enhanced Column Header --}}
                         <div
                             class="flex items-center justify-between mb-5 pb-3 border-b-2 border-gray-300 dark:border-gray-600">

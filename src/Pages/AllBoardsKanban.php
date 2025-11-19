@@ -23,6 +23,10 @@ class AllBoardsKanban extends Page
 
     public ?int $selectedBoardId = null;
 
+    public ?int $selectedUserId = null;
+
+    public ?string $selectedPriority = null;
+
     public function mount(): void
     {
         // Select the first active board by default
@@ -43,7 +47,7 @@ class AllBoardsKanban extends Page
 
     public function getSelectedBoard()
     {
-        if (! $this->selectedBoardId) {
+        if (!$this->selectedBoardId) {
             return null;
         }
 
@@ -57,13 +61,22 @@ class AllBoardsKanban extends Page
 
     public function getIssuesByStatus(string $status)
     {
-        if (! $this->selectedBoardId) {
+        if (!$this->selectedBoardId) {
             return collect();
         }
 
-        return Issue::where('board_id', $this->selectedBoardId)
-            ->where('status', $status)
-            ->orderBy('order')
+        $query = Issue::where('board_id', $this->selectedBoardId)
+            ->where('status', $status);
+
+        if ($this->selectedUserId) {
+            $query->where('assigned_to', $this->selectedUserId);
+        }
+
+        if ($this->selectedPriority) {
+            $query->where('priority', $this->selectedPriority);
+        }
+
+        return $query->orderBy('order')
             ->orderBy('created_at', 'desc')
             ->with('assignedUser')
             ->get();
@@ -93,6 +106,31 @@ class AllBoardsKanban extends Page
             'review' => 'In Review',
             'done' => 'Done',
         ]);
+    }
+
+    public function getUsers()
+    {
+        $userModel = config('auth.providers.users.model');
+
+        return $userModel::whereHas('assignedIssues')
+            ->orderBy('name')
+            ->get();
+    }
+
+    public function getPriorities(): array
+    {
+        return config('kanban.priorities', [
+            'low' => 'Düşük',
+            'medium' => 'Orta',
+            'high' => 'Yüksek',
+            'urgent' => 'Acil',
+        ]);
+    }
+
+    public function clearFilters(): void
+    {
+        $this->selectedUserId = null;
+        $this->selectedPriority = null;
     }
 
     public function getTitle(): string|Htmlable
