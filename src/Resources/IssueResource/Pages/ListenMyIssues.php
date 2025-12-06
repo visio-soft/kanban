@@ -40,6 +40,10 @@ class ListenMyIssues extends Page
     // Polling method - called every 3 seconds from blade
     public function checkForNewIssues(): void
     {
+        // Update presence heartbeat (expires in 15 seconds)
+        // This lets other pages know this user is currently on this page
+        \Illuminate\Support\Facades\Cache::put('user_listening:' . auth()->id(), now(), now()->addSeconds(15));
+
         $userId = Auth::id();
 
         // Get the latest issue assigned to this user

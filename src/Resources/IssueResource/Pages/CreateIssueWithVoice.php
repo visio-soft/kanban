@@ -28,6 +28,25 @@ class CreateIssueWithVoice extends Page
     
     public ?string $createdIssueSummary = null;
 
+    /**
+     * Get users who are currently on the ListenMyIssues page.
+     * Checks for the cache key set by the listener page heartbeat.
+     */
+    public function getActiveListeners(): \Illuminate\Database\Eloquent\Collection
+    {
+        // Get all users (optimize if needed for large user bases)
+        $users = User::all();
+        
+        return $users->filter(function ($user) {
+            // Exclude self
+            if ($user->id === auth()->id()) {
+                return false;
+            }
+            $key = 'user_listening:' . $user->id;
+            return \Illuminate\Support\Facades\Cache::has($key);
+        })->values();
+    }
+
 
 
 

@@ -11,6 +11,24 @@
                         Mikrofona dokunun ve görevi anlatın.
                     </p>
                 </div>
+                
+                {{-- Active Listeners Section --}}
+                <div wire:poll.5s class="flex flex-col items-center justify-center space-y-2">
+                    <span class="text-xs font-medium text-gray-500 uppercase tracking-widest">Aktif Dinleyenler</span>
+                    <div class="flex flex-wrap justify-center gap-2">
+                        @forelse($this->getActiveListeners() as $user)
+                            <div class="flex items-center gap-2 px-3 py-1 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-full">
+                                <span class="relative flex h-2 w-2">
+                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                  <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                                </span>
+                                <span class="text-xs font-semibold text-green-700 dark:text-green-300">{{ $user->name }}</span>
+                            </div>
+                        @empty
+                            <span class="text-xs text-gray-400 italic">Şu an kimse dinlemiyor</span>
+                        @endforelse
+                    </div>
+                </div>
 
                 <div class="flex flex-col items-center space-y-8 py-10">
                     <div class="relative group">
