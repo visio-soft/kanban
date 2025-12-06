@@ -245,6 +245,7 @@ class IssueResource extends Resource
         return [
             'index' => Pages\ListIssues::route('/'),
             'create' => Pages\CreateIssue::route('/create'),
+            'create-with-voice' => Pages\CreateIssueWithVoice::route('/create-with-voice'),
             'edit' => Pages\EditIssue::route('/{record}/edit'),
         ];
     }
