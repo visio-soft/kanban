@@ -2,9 +2,6 @@
 
 namespace Visiosoft\Kanban\Resources\IssueResource\Pages;
 
-use Filament\Actions\Action;
-use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use Illuminate\Support\Facades\Http;
@@ -23,112 +20,27 @@ class CreateIssueWithVoice extends Page
 
     protected static ?string $navigationLabel = 'Sesli İş Oluştur';
 
-    public ?array $data = [];
-
-    public bool $showForm = false;
-
     public string $transcribedText = '';
+    
+    public ?int $createdIssueId = null;
+    
+    public ?string $createdIssueUrl = null;
+    
+    public ?string $createdIssueSummary = null;
 
-    public function mount(): void
-    {
-        $this->form->fill([
-            'board_id' => Board::query()->where('is_active', true)->first()?->id,
-            'status' => 'todo',
-            'priority' => 'medium',
-        ]);
-    }
 
-    public function form(Form $form): Form
-    {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Görev Detayları')
-                    ->schema([
-                        Forms\Components\Select::make('board_id')
-                            ->label('Pano')
-                            ->options(Board::query()->where('is_active', true)->pluck('name', 'id'))
-                            ->required()
-                            ->default(fn () => Board::query()->where('is_active', true)->first()?->id),
 
-                        Forms\Components\TextInput::make('title')
-                            ->label('Başlık')
-                            ->required()
-                            ->maxLength(255)
-                            ->columnSpanFull(),
 
-                        Forms\Components\Textarea::make('description')
-                            ->label('Açıklama')
-                            ->columnSpanFull()
-                            ->rows(3),
-                    ])->columns(2),
 
-                Forms\Components\Section::make('Durum ve Öncelik')
-                    ->schema([
-                        Forms\Components\Select::make('status')
-                            ->label('Durum')
-                            ->options(config('kanban.statuses', [
-                                'backlog' => 'Beklemede',
-                                'todo' => 'Yapılacak',
-                                'in_progress' => 'Devam Ediyor',
-                                'review' => 'İncelemede',
-                                'done' => 'Tamamlandı',
-                            ]))
-                            ->default('todo')
-                            ->required(),
-
-                        Forms\Components\Select::make('priority')
-                            ->label('Öncelik')
-                            ->options(config('kanban.priorities', [
-                                'low' => 'Düşük',
-                                'medium' => 'Orta',
-                                'high' => 'Yüksek',
-                                'urgent' => 'Acil',
-                            ]))
-                            ->default('medium')
-                            ->required(),
-                    ])->columns(2),
-
-                Forms\Components\Section::make('Atama ve Zamanlama')
-                    ->schema([
-                        Forms\Components\Select::make('assigned_to')
-                            ->label('Atanan Kişi')
-                            ->options(User::query()->orderBy('name')->pluck('name', 'id'))
-                            ->searchable()
-                            ->nullable(),
-
-                        Forms\Components\DateTimePicker::make('start_at')
-                            ->label('Başlangıç Tarihi')
-                            ->nullable()
-                            ->seconds(false),
-
-                        Forms\Components\DateTimePicker::make('due_date')
-                            ->label('Bitiş Tarihi')
-                            ->nullable()
-                            ->seconds(false),
-                    ])->columns(3),
-
-                Forms\Components\Section::make('Etiketler')
-                    ->schema([
-                        Forms\Components\TagsInput::make('tags')
-                            ->label('Etiketler')
-                            ->nullable(),
-                    ]),
-            ])
-            ->statePath('data');
-    }
-
-    public function processVoiceInputWithSummary(array $voiceData): array
+    public function processVoiceInputWithSummary(array $voiceData): void
     {
         try {
             $transcribedText = $voiceData['text'] ?? '';
             $this->transcribedText = $transcribedText;
 
             if (empty($transcribedText)) {
-                return [
-                    'success' => false,
-                    'summary' => null,
-                    'needsAssignment' => false,
-                ];
+                $this->dispatch('voice-error', message: 'Ses anlaşılamadı, lütfen tekrar deneyin.');
+                return;
             }
 
             // Get assignable users
@@ -139,11 +51,8 @@ class CreateIssueWithVoice extends Page
             // Process with OpenAI to extract task details
             $taskDetails = $this->extractTaskDetailsWithOpenAI($transcribedText, $users->toArray());
 
-            // Create summary
-            $summary = $this->createTaskSummary($taskDetails, $transcribedText);
-
-            // Fill the form with extracted data
-            $this->form->fill([
+            // Create the issue directly
+            $issue = Issue::create([
                 'board_id' => $taskDetails['board_id'] ?? Board::query()->where('is_active', true)->first()?->id,
                 'title' => $taskDetails['title'] ?? $transcribedText,
                 'description' => $taskDetails['description'] ?? null,
@@ -155,110 +64,43 @@ class CreateIssueWithVoice extends Page
                 'tags' => $taskDetails['tags'] ?? null,
             ]);
 
-            // Check if assignment is needed
-            $needsAssignment = empty($taskDetails['assigned_to']);
+            // Create summary
+            $summary = $this->createTaskSummary($taskDetails, $transcribedText);
 
-            if (! $needsAssignment) {
-                $this->showForm = true;
-            }
-
-            return [
-                'success' => true,
-                'summary' => $summary,
-                'needsAssignment' => $needsAssignment,
-            ];
-        } catch (\Exception $e) {
-            Notification::make()
-                ->title('Hata')
-                ->body('Görev işlenirken bir hata oluştu: '.$e->getMessage())
-                ->danger()
-                ->send();
-
-            return [
-                'success' => false,
-                'summary' => null,
-                'needsAssignment' => false,
-            ];
-        }
-    }
-
-    public function assignTaskToUser(array $data): void
-    {
-        try {
-            $assigneeName = $data['name'] ?? '';
-
-            if (empty($assigneeName)) {
-                $this->showForm = true;
-                return;
-            }
-
-            // Find user by fuzzy matching
-            $users = User::select('id', 'name')
-                ->orderBy('name')
-                ->get();
-
-            $assignedUserId = null;
-            $bestMatch = 0;
-            $bestMatchedUser = null;
-
-            foreach ($users as $user) {
-                // Exact match check
-                similar_text(
-                    strtolower($assigneeName),
-                    strtolower($user->name),
-                    $percent
-                );
-
-                // Contains check
-                $nameParts = explode(' ', strtolower($user->name));
-                $searchParts = explode(' ', strtolower($assigneeName));
-
-                foreach ($searchParts as $searchPart) {
-                    foreach ($nameParts as $namePart) {
-                        if (strlen($searchPart) >= 3 && str_contains($namePart, $searchPart)) {
-                            $percent = max($percent, 80);
-                        }
-                    }
-                }
-
-                if ($percent > $bestMatch) {
-                    $bestMatch = $percent;
-                    $assignedUserId = $user->id;
-                    $bestMatchedUser = $user;
-                }
-            }
-
-            // Update form with assigned user
-            $currentData = $this->form->getState();
-            $currentData['assigned_to'] = $assignedUserId;
-            $this->form->fill($currentData);
-
-            $this->showForm = true;
-
-            if ($assignedUserId && $bestMatchedUser) {
-                Notification::make()
-                    ->title('Başarılı')
-                    ->body("Görev {$bestMatchedUser->name} kişisine atandı.")
-                    ->success()
-                    ->send();
-
-                $this->dispatch('userAssigned', name: $bestMatchedUser->name);
+            // Build spoken message
+            $assignedUser = $taskDetails['assigned_to'] ? User::find($taskDetails['assigned_to']) : null;
+            $firstName = $assignedUser ? explode(' ', trim($assignedUser->name))[0] : '';
+            $taskTitle = $taskDetails['title'] ?? 'yeni görevi';
+            
+            if ($assignedUser) {
+                $spokenMessage = "Tamam, {$taskTitle} işini {$firstName} atadım.";
             } else {
-                Notification::make()
-                    ->title('Uyarı')
-                    ->body('Belirtilen isimde kullanıcı bulunamadı. Lütfen manuel seçin.')
-                    ->warning()
-                    ->send();
+                $spokenMessage = "Tamam, {$taskTitle} işini oluşturdum.";
             }
+
+            // Get issue URL
+            $issueUrl = IssueResource::getUrl('edit', ['record' => $issue->id]);
+
+            // Store issue data in component properties
+            $this->createdIssueId = $issue->id;
+            $this->createdIssueUrl = $issueUrl;
+            $this->createdIssueSummary = $summary;
+
+            // Dispatch success event with issue link
+            $this->dispatch('voice-issue-created', [
+                'summary' => $summary,
+                'spoken_message' => $spokenMessage,
+                'issue_url' => $issueUrl,
+                'issue_id' => $issue->id,
+            ]);
+
+
         } catch (\Exception $e) {
-            $this->showForm = true;
-            Notification::make()
-                ->title('Hata')
-                ->body('Atama yapılırken bir hata oluştu: '.$e->getMessage())
-                ->danger()
-                ->send();
+            $this->dispatch('voice-error', message: 'Görev işlenirken bir hata oluştu: '.$e->getMessage());
         }
     }
+
+
 
     protected function createTaskSummary(array $taskDetails, string $originalText): string
     {
@@ -344,7 +186,7 @@ class CreateIssueWithVoice extends Page
             'Authorization' => 'Bearer '.$apiKey,
             'Content-Type' => 'application/json',
         ])->timeout(30)->post('https://api.openai.com/v1/chat/completions', [
-            'model' => 'gpt-4o',
+            'model' => 'gpt-4o-mini',
             'messages' => [
                 [
                     'role' => 'system',
@@ -389,37 +231,4 @@ class CreateIssueWithVoice extends Page
         ];
     }
 
-    public function createIssue(): void
-    {
-        $data = $this->form->getState();
-
-        try {
-            $issue = Issue::create($data);
-
-            Notification::make()
-                ->title('Başarılı')
-                ->body('Görev başarıyla oluşturuldu.')
-                ->success()
-                ->send();
-
-            $this->redirect(IssueResource::getUrl('index'));
-        } catch (\Exception $e) {
-            Notification::make()
-                ->title('Hata')
-                ->body('Görev oluşturulurken bir hata oluştu: '.$e->getMessage())
-                ->danger()
-                ->send();
-        }
-    }
-
-    public function resetForm(): void
-    {
-        $this->showForm = false;
-        $this->transcribedText = '';
-        $this->form->fill([
-            'board_id' => Board::query()->where('is_active', true)->first()?->id,
-            'status' => 'todo',
-            'priority' => 'medium',
-        ]);
-    }
 }

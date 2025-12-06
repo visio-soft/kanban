@@ -16,7 +16,8 @@ class ListIssues extends ListRecords
                 ->label('Sesli İş Oluştur')
                 ->icon('heroicon-o-microphone')
                 ->color('danger')
-                ->url(fn (): string => IssueResource::getUrl('create-with-voice')),
+                ->url(fn (): string => IssueResource::getUrl('create-with-voice'))
+                ->openUrlInNewTab(),
             \Filament\Actions\CreateAction::make(),
         ];
     }
