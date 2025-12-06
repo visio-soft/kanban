@@ -21,7 +21,10 @@
                             type="button"
                             class="relative flex items-center justify-center w-32 h-32 rounded-full bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 border-4 border-white dark:border-gray-800 ring-4 ring-red-50 dark:ring-red-900/20"
                         >
-                            <x-heroicon-s-microphone class="w-14 h-14" />
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" data-slot="icon" class="w-14 h-14">
+                                <path d="M8.25 4.5a3.75 3.75 0 1 1 7.5 0v8.25a3.75 3.75 0 1 1-7.5 0V4.5Z"/>
+                                <path d="M6 10.5a.75.75 0 0 1 .75.75v1.5a5.25 5.25 0 1 0 10.5 0v-1.5a.75.75 0 0 1 1.5 0v1.5a6.751 6.751 0 0 1-6 6.709v2.291h3a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1 0-1.5h3v-2.291a6.751 6.751 0 0 1-6-6.709v-1.5A.75.75 0 0 1 6 10.5Z"/>
+                            </svg>
                         </button>
                     </div>
 
@@ -32,7 +35,9 @@
                         class="relative flex items-center justify-center w-32 h-32 rounded-full bg-red-600 text-white shadow-xl animate-pulse border-4 border-white dark:border-gray-800"
                     >
                         <div class="flex flex-col items-center">
-                            <x-heroicon-s-stop class="w-12 h-12 mb-1" />
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" data-slot="icon" class="w-12 h-12 mb-1">
+                                <path fill-rule="evenodd" d="M4.5 7.5a3 3 0 0 1 3-3h9a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-9a3 3 0 0 1-3-3v-9Z" clip-rule="evenodd"/>
+                            </svg>
                             <span id="recordingTimer" class="text-xs font-mono font-medium tracking-wider">00:00</span>
                         </div>
                     </button>
@@ -51,7 +56,9 @@
                 <div id="summaryResult" class="hidden max-w-2xl mx-auto mt-6 p-6 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/50 rounded-xl text-left shadow-sm">
                     <div class="flex items-start gap-3">
                         <div class="flex-shrink-0 mt-1">
-                            <x-heroicon-s-check-circle class="w-5 h-5 text-green-600 dark:text-green-400" />
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" data-slot="icon" class="w-5 h-5 text-green-600 dark:text-green-400">
+                                <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clip-rule="evenodd"/>
+                            </svg>
                         </div>
                         <div class="space-y-2">
                             <p class="text-sm font-semibold text-green-800 dark:text-green-300">Anlaşılan Görev:</p>
@@ -73,7 +80,9 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-all duration-300">
             <div class="mb-6 flex items-center justify-between">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                    <x-heroicon-o-pencil-square class="w-5 h-5 text-gray-400" />
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-5 h-5 text-gray-400">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/>
+                    </svg>
                     Görev Detayları
                 </h3>
                 @if($transcribedText)
