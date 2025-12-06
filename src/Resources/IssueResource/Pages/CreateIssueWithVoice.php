@@ -38,8 +38,12 @@ class CreateIssueWithVoice extends Page
             $transcribedText = $voiceData['text'] ?? '';
             $this->transcribedText = $transcribedText;
 
-            if (empty($transcribedText)) {
-                $this->dispatch('voice-error', message: 'Ses anlaşılamadı, lütfen tekrar deneyin.');
+            // Normalize text for checking
+            $normalizedText = mb_strtolower(trim($transcribedText));
+            $invalidPhrases = ['dinliyorum', 'tamam', 'hazır', 'dinleniyor', 'dinliyorum.'];
+
+            if (empty($transcribedText) || in_array($normalizedText, $invalidPhrases)) {
+                $this->dispatch('voice-error', message: 'Geçerli bir komut anlaşılamadı (Otomatik mesajlar filtrelendi).');
                 return;
             }
 
@@ -50,6 +54,12 @@ class CreateIssueWithVoice extends Page
 
             // Process with OpenAI to extract task details
             $taskDetails = $this->extractTaskDetailsWithOpenAI($transcribedText, $users->toArray());
+
+            // Check if OpenAI marked it as invalid
+            if (($taskDetails['title'] ?? '') === 'INVALID_INPUT') {
+                 $this->dispatch('voice-error', message: 'Geçersiz giriş veya sistem mesajı algılandı.');
+                 return;
+            }
 
             // Create the issue directly
             $issue = Issue::create([
@@ -180,6 +190,9 @@ class CreateIssueWithVoice extends Page
         $systemPrompt .= "  * akşama kadar = until evening (21:00)\n";
         $systemPrompt .= "- Match person names using fuzzy matching (Samet matches \"Samet Yılmaz\")\n";
         $systemPrompt .= "- IMPORTANT: If a date is mentioned (yarın, bugün), you MUST include both start_at and due_date\n";
+        $systemPrompt .= "- FILTERING RULES:\n";
+        $systemPrompt .= "  * IGNORE the word 'Dinliyorum' or 'Dinleniyor' if it appears at the start of the sentence. Treat the rest of the sentence as the task.\n";
+        $systemPrompt .= "  * If the text is ONLY 'Dinliyorum', 'Dinleniyor', 'Tamam' or noise, return {\"title\": \"INVALID_INPUT\"}.\n";
         $systemPrompt .= "- Return ONLY valid JSON, no additional text\n\n";
 
         $response = Http::withHeaders([
