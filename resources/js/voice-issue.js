@@ -25,6 +25,7 @@ if (typeof window.VoiceIssueManager === 'undefined') {
                 analyser: null,
                 dataArray: null,
                 animationFrame: null,
+                retryCount: 0,
             };
 
             this.elements = {
@@ -104,11 +105,18 @@ if (typeof window.VoiceIssueManager === 'undefined') {
                     this.log('Event received: voice-error', data);
                     this.handleError(data);
                 });
+                Livewire.on('voice-retry', (data) => {
+                    this.log('Event received: voice-retry', data);
+                    this.handleRetry(data);
+                });
             });
         }
 
         async startRecording() {
             if (this.state.isProcessing) return;
+
+            // Reset retry count on manual start
+            this.state.retryCount = 0;
 
             try {
                 this.log('Requesting microphone access');
@@ -120,7 +128,8 @@ if (typeof window.VoiceIssueManager === 'undefined') {
                 this.state.mediaRecorder.start();
                 this.log('MediaRecorder started');
                 this.updateUI('recording');
-                this.speak("Dinliyorum...", 0.8); // Slight wait to not overlap with click sound if any
+                // Removed spoken prompt to avoid self-triggering loop
+                // this.speak("Dinliyorum...", 0.8);
 
             } catch (error) {
                 console.error('Microphone error:', error);
@@ -267,6 +276,9 @@ if (typeof window.VoiceIssueManager === 'undefined') {
         handleIssueCreated(data) {
             const payload = this.getData(data);
 
+            // Success reset
+            this.state.retryCount = 0;
+
             this.log('Issue created successfully', payload);
 
             // Display summary
@@ -291,6 +303,34 @@ if (typeof window.VoiceIssueManager === 'undefined') {
             this.updateUI('idle');
         }
 
+        handleRetry(data) {
+            // Increment retry count
+            this.state.retryCount = (this.state.retryCount || 0) + 1;
+
+            if (this.state.retryCount > 3) {
+                this.log('Max retries reached', { count: this.state.retryCount });
+                this.showNotification('Hata', 'Çok fazla deneme yapıldı. Lütfen tekrar deneyin.', 'danger');
+                this.speak('Üzgünüm, sizi duyamıyorum veya anlayamıyorum.');
+                this.state.retryCount = 0; // Reset
+                this.updateUI('idle');
+                return;
+            }
+
+            const payload = this.getData(data);
+            this.showNotification('Tekrar Dinleniyor', payload.message + ' (' + this.state.retryCount + '/3)', 'warning');
+
+            // Removed spoken prompt for retry
+            // this.speak(payload.message || "Anlaşılmadı, tekrar dinleniyor.");
+
+            this.updateUI('idle');
+
+            // Restart recording after a longer delay to ensure TTS finishes and no echo 
+            setTimeout(() => {
+                this.log('Auto-restarting recording', { retry: this.state.retryCount });
+                this.startRecording();
+            }, 3000); // 3 seconds delay
+        }
+
         getData(data) {
             return Array.isArray(data) ? data[0] : data;
         }
@@ -311,8 +351,8 @@ if (typeof window.VoiceIssueManager === 'undefined') {
                     startBtn.style.display = 'none';
                     recordingIndicator.style.display = 'flex';
                     loading.style.display = 'none';
-                    statusText.textContent = 'Dinliyorum...';
-                    statusText.className = 'h-6 text-base font-medium text-red-600 dark:text-red-400 animate-pulse';
+                    statusText.textContent = 'Şimdi Konuşun - Dinleniyor...';
+                    statusText.className = 'h-6 text-base font-medium text-green-600 dark:text-green-400 animate-pulse';
                     break;
                 case 'processing':
                     recordingIndicator.style.display = 'none';

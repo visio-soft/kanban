@@ -40,10 +40,31 @@ class CreateIssueWithVoice extends Page
 
             // Normalize text for checking
             $normalizedText = mb_strtolower(trim($transcribedText));
-            $invalidPhrases = ['dinliyorum', 'tamam', 'hazır', 'dinleniyor', 'dinliyorum.'];
+            // Classic system prompts
+            $systemPhrases = ['dinliyorum', 'tamam', 'hazır', 'dinleniyor', 'dinliyorum.'];
+            // Whisper hallucinations (silence artifacts)
+            $hallucinationPhrases = [
+                'altyazı m.k.', 'altyazı', 'alt yazı', 'subtitle', 'mbc', 
+                'destek olun', 'izlediğiniz için teşekkürler', 'amara.org'
+            ];
 
-            if (empty($transcribedText) || in_array($normalizedText, $invalidPhrases)) {
-                $this->dispatch('voice-error', message: 'Geçerli bir komut anlaşılamadı (Otomatik mesajlar filtrelendi).');
+            // 1. Check for silence/empty
+            if (empty($transcribedText)) {
+                $this->dispatch('voice-retry', message: 'Ses algılanmadı, tekrar dinleniyor...');
+                return;
+            }
+
+            // 2. Check for hallucinations (treat as silence)
+            foreach ($hallucinationPhrases as $phrase) {
+                if (str_contains($normalizedText, $phrase)) {
+                    $this->dispatch('voice-retry', message: 'Ses algılanmadı (Gürültü filtrelendi), tekrar dinleniyor...');
+                    return;
+                }
+            }
+
+            // 3. Check for system prompts (treat as invalid input)
+            if (in_array($normalizedText, $systemPhrases)) {
+                $this->dispatch('voice-retry', message: 'Anlaşılmadı, tekrar dinleniyor...');
                 return;
             }
 
@@ -57,7 +78,7 @@ class CreateIssueWithVoice extends Page
 
             // Check if OpenAI marked it as invalid
             if (($taskDetails['title'] ?? '') === 'INVALID_INPUT') {
-                 $this->dispatch('voice-error', message: 'Geçersiz giriş veya sistem mesajı algılandı.');
+                 $this->dispatch('voice-retry', message: 'Geçersiz giriş veya sistem mesajı algılandı, tekrar dinleniyor...');
                  return;
             }
 
@@ -192,7 +213,8 @@ class CreateIssueWithVoice extends Page
         $systemPrompt .= "- IMPORTANT: If a date is mentioned (yarın, bugün), you MUST include both start_at and due_date\n";
         $systemPrompt .= "- FILTERING RULES:\n";
         $systemPrompt .= "  * IGNORE the word 'Dinliyorum' or 'Dinleniyor' if it appears at the start of the sentence. Treat the rest of the sentence as the task.\n";
-        $systemPrompt .= "  * If the text is ONLY 'Dinliyorum', 'Dinleniyor', 'Tamam' or noise, return {\"title\": \"INVALID_INPUT\"}.\n";
+        $systemPrompt .= "  * IGNORE phrases like 'Altyazı M.K.', 'Altyazı', 'Subtitle' which are silence artifacts.\n";
+        $systemPrompt .= "  * If the text is ONLY 'Dinliyorum', 'Dinleniyor', 'Tamam', 'Altyazı' or noise, return {\"title\": \"INVALID_INPUT\"}.\n";
         $systemPrompt .= "- Return ONLY valid JSON, no additional text\n\n";
 
         $response = Http::withHeaders([

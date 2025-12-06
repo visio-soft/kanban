@@ -31,7 +31,7 @@
                         id="recordingIndicator"
                         type="button"
                         style="display: none;"
-                        class="relative flex items-center justify-center w-32 h-32 rounded-full bg-red-600 text-white shadow-xl animate-pulse border-4 border-white dark:border-gray-800"
+                        class="relative flex items-center justify-center w-32 h-32 rounded-full bg-green-600 text-white shadow-xl animate-pulse border-4 border-white dark:border-gray-800"
                     >
                         <div class="flex flex-col items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" data-slot="icon" class="w-12 h-12 mb-1">
