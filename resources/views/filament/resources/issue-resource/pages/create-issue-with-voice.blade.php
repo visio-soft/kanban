@@ -19,7 +19,7 @@
                         <button
                             id="startRecording"
                             type="button"
-                            class="relative flex items-center justify-center w-32 h-32 rounded-full bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 border-4 border-white dark:border-gray-800 ring-4 ring-red-50 dark:ring-red-900/20"
+                            class="relative flex items-center justify-center w-32 h-32 rounded-full bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-red-50 shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 border-4 border-white dark:border-gray-800 ring-4 ring-red-50 dark:ring-red-900/20"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" data-slot="icon" class="w-14 h-14">
                                 <path d="M8.25 4.5a3.75 3.75 0 1 1 7.5 0v8.25a3.75 3.75 0 1 1-7.5 0V4.5Z"/>
