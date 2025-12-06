@@ -12,6 +12,11 @@ class ListIssues extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            \Filament\Actions\Action::make('createWithVoice')
+                ->label('Sesli İş Oluştur')
+                ->icon('heroicon-o-microphone')
+                ->color('danger')
+                ->url(fn (): string => IssueResource::getUrl('create-with-voice')),
             \Filament\Actions\CreateAction::make(),
         ];
     }
