@@ -24,6 +24,18 @@ class KanbanServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'kanban');
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
+        // Register Livewire components from package
+        if (class_exists(\Livewire\Livewire::class)) {
+            \Livewire\Livewire::component(
+                'visiosoft.kanban.resources.issue-resource.pages.listen-my-issues',
+                \Visiosoft\Kanban\Resources\IssueResource\Pages\ListenMyIssues::class
+            );
+            \Livewire\Livewire::component(
+                'visiosoft.kanban.resources.issue-resource.pages.create-issue-with-voice',
+                \Visiosoft\Kanban\Resources\IssueResource\Pages\CreateIssueWithVoice::class
+            );
+        }
+
         if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__.'/../config/kanban.php' => config_path('kanban.php'),
