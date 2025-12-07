@@ -31,19 +31,8 @@ class Issue extends Model
     ];
 
     protected static function booted(): void
-    {
-        static::created(function (Issue $issue) {
-            if ($issue->assigned_to) {
-                event(new \App\Events\IssueAssigned($issue));
-            }
-        });
-
-        static::updated(function (Issue $issue) {
-            // Dispatch event if assigned_to was just set or changed
-            if ($issue->wasChanged('assigned_to') && $issue->assigned_to) {
-                event(new \App\Events\IssueAssigned($issue));
-            }
-        });
+    { 
+        
     }
 
     public function board(): BelongsTo
