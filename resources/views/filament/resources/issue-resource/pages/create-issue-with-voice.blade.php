@@ -121,7 +121,13 @@
 
     @push('scripts')
     <script>
-        {!! file_get_contents(base_path('packages/visio/kanban/resources/js/voice-issue.js')) !!}
+        @php
+            $voiceJsPath = base_path('packages/visio/kanban/resources/js/voice-issue.js');
+            if (!file_exists($voiceJsPath)) {
+                $voiceJsPath = base_path('vendor/visio/kanban/resources/js/voice-issue.js');
+            }
+        @endphp
+        {!! file_get_contents($voiceJsPath) !!}
 
         // Singleton instance to prevent duplicate initialization
         window.voiceManagerInstance = null;

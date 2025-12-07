@@ -128,6 +128,19 @@ class CreateIssueWithVoice extends Page
                 $spokenMessage = "Tamam, {$taskTitle} işini oluşturdum.";
             }
 
+            if (! empty($taskDetails['due_date'])) {
+                $dueDate = \Carbon\Carbon::parse($taskDetails['due_date']);
+                
+                if ($dueDate->isTomorrow()) {
+                    $spokenMessage .= " Ha unutmadan, yarın akşama kadar bitmesini istiyor.";
+                } elseif ($dueDate->isSameDay(now()->addDays(2))) {
+                    $spokenMessage .= " Ha unutmadan, öbürsü güne kadar bitmesini istiyor.";
+                } else {
+                    $dateStr = $dueDate->translatedFormat('j F');
+                    $spokenMessage .= " Ha unutmadan, {$dateStr} tarihine kadar bitmesini istiyor.";
+                }
+            }
+
             // Get issue URL
             $issueUrl = IssueResource::getUrl('edit', ['record' => $issue->id]);
 
