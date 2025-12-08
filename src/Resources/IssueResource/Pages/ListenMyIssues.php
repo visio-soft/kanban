@@ -75,6 +75,20 @@ class ListenMyIssues extends Page
                 'created_at' => $latestIssue->created_at->format('H:i'),
             ];
 
+            // Voice Message Logic for Assignee
+            $voiceContext = \Illuminate\Support\Facades\Cache::get('issue_voice_context_' . $latestIssue->id);
+            if ($voiceContext) {
+                $creatorName = $voiceContext['creator_name'] ?? 'Birisi';
+                $dueDatePhrase = $voiceContext['due_date_phrase'] ?? null;
+
+                // "{Atayan Kişi Adı} size {Çok kısa özet} işini atadı. Ha şu {tarih} bitirilmesi gerekiyor dedi."
+                $voiceText = "{$creatorName} size {$latestIssue->title} işini atadı.";
+                if ($dueDatePhrase) {
+                    $voiceText .= " Ha şu {$dueDatePhrase} bitirilmesi gerekiyor dedi.";
+                }
+                $issueData['voice_text'] = $voiceText;
+            }
+
             $this->handleNewIssue($issueData);
         }
     }

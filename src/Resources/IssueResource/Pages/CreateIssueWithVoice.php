@@ -117,28 +117,46 @@ class CreateIssueWithVoice extends Page
             // Create summary
             $summary = $this->createTaskSummary($taskDetails, $transcribedText);
 
-            // Build spoken message
+            // Build spoken message for CREATOR
             $assignedUser = $taskDetails['assigned_to'] ? User::find($taskDetails['assigned_to']) : null;
-            $firstName = $assignedUser ? explode(' ', trim($assignedUser->name))[0] : '';
             $taskTitle = $taskDetails['title'] ?? 'yeni görevi';
             
-            if ($assignedUser) {
-                $spokenMessage = "Tamam, {$taskTitle} işini {$firstName} atadım.";
-            } else {
-                $spokenMessage = "Tamam, {$taskTitle} işini oluşturdum.";
-            }
-
+            // Prepare Due Date Phrase for both parties
+            $dueDatePhrase = null;
             if (! empty($taskDetails['due_date'])) {
                 $dueDate = \Carbon\Carbon::parse($taskDetails['due_date']);
                 
                 if ($dueDate->isTomorrow()) {
-                    $spokenMessage .= " Ha unutmadan, yarın akşama kadar bitmesini istiyor.";
+                    $dueDatePhrase = "yarın akşama kadar";
                 } elseif ($dueDate->isSameDay(now()->addDays(2))) {
-                    $spokenMessage .= " Ha unutmadan, öbürsü güne kadar bitmesini istiyor.";
+                    $dueDatePhrase = "öbürsü güne kadar";
                 } else {
                     $dateStr = $dueDate->translatedFormat('j F');
-                    $spokenMessage .= " Ha unutmadan, {$dateStr} tarihine kadar bitmesini istiyor.";
+                    $dueDatePhrase = "{$dateStr} tarihine kadar";
                 }
+            }
+
+            if ($assignedUser) {
+                // Turkish suffix logic for name
+                $firstName = explode(' ', trim($assignedUser->name))[0];
+                $lastVowel = 'e'; // Default
+                if (preg_match('/[aıou][^eiöü]*$/u', $firstName)) {
+                    $lastVowel = 'a';
+                }
+                $suffix = (preg_match('/[aeıioöuü]$/u', $firstName) ? 'y' : '') . $lastVowel;
+                
+                // "{Çok kısa özet} işini {Atanan Kişi Adı} atadım"
+                $spokenMessage = "{$taskTitle} işini {$firstName}'{$suffix} atadım.";
+
+                // Cache context for ASSIGNEE (Listener)
+                // We store it so the listener page can retrieve "Who assigned it" and "What did they say about due date"
+                \Illuminate\Support\Facades\Cache::put('issue_voice_context_' . $issue->id, [
+                    'creator_name' => auth()->user()->name,
+                    'due_date_phrase' => $dueDatePhrase
+                ], now()->addMinutes(10));
+                
+            } else {
+                $spokenMessage = "{$taskTitle} işini oluşturdum.";
             }
 
             // Get issue URL
