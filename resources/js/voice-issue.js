@@ -388,6 +388,12 @@ if (typeof window.VoiceIssueManager === 'undefined') {
             return new Promise(resolve => {
                 setTimeout(() => {
                     const utterance = new SpeechSynthesisUtterance(text);
+                    // Find TR voice
+                    const voices = window.speechSynthesis.getVoices();
+                    const trVoice = voices.find(v => v.lang === 'tr-TR') ||
+                        voices.find(v => v.lang.startsWith('tr'));
+                    if (trVoice) utterance.voice = trVoice;
+
                     utterance.lang = 'tr-TR';
                     utterance.rate = 1.3; // Faster natural talk as requested
                     utterance.onend = resolve;

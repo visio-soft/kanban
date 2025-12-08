@@ -250,6 +250,7 @@ class CreateIssueWithVoice extends Page
         $systemPrompt .= "\n\nCurrent date and time: {$currentDateTime}\n\n";
         $systemPrompt .= "Rules:\n";
         $systemPrompt .= "- Tasks can be maximum 8 hours long\n";
+        $systemPrompt .= "- Title and Description MUST be in Turkish. If input is English, Translate it.\n";
         $systemPrompt .= "- If start time is mentioned but not end time, add 8 hours to start time for due_date\n";
         $systemPrompt .= "- If end time is mentioned but not start time, subtract 8 hours from end time for start_at\n";
         $systemPrompt .= "- Match Turkish time expressions:\n";

@@ -332,9 +332,19 @@
                     // Ensure we can speak
                     speechSynthesis.cancel();
                     
+                    // Helper to finding TR voice
+                    const getTrVoice = () => {
+                        const voices = window.speechSynthesis.getVoices();
+                        // Try exact match first, then prefix
+                        return voices.find(v => v.lang === 'tr-TR') || 
+                               voices.find(v => v.lang.startsWith('tr'));
+                    };
+
                     if (issue.voice_text) {
                         // Use the server-provided custom message
                         const utterance = new SpeechSynthesisUtterance(issue.voice_text);
+                        const trVoice = getTrVoice();
+                        if (trVoice) utterance.voice = trVoice;
                         utterance.lang = 'tr-TR';
                         utterance.rate = 1.0; 
                         utterance.pitch = 1;
@@ -385,6 +395,8 @@
                     }
 
                     const utterance = new SpeechSynthesisUtterance(message);
+                    const trVoice = getTrVoice();
+                    if (trVoice) utterance.voice = trVoice;
                     utterance.lang = 'tr-TR';
                     utterance.rate = 1.0;
                     utterance.pitch = 1;
