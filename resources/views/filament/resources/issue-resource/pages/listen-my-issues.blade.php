@@ -2,8 +2,7 @@
     {{-- Polling container - checks every 3 seconds --}}
     <div wire:poll.3s="checkForNewIssues">
         <div 
-            x-data="issueListener()"
-            x-init="init()"
+            x-data="issueListener"
             @new-issue-arrived.window="handleNewIssue($event.detail.issue)"
             class="min-h-[70vh] flex flex-col"
         >
@@ -196,39 +195,41 @@
                 </div>
             </div>
             @endif
-        </div>
-    </div>
 
-<div 
-        x-show="!hasInteracted"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-        x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in duration-200"
-        x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0"
-    >
-        <button 
-            @click="startListeningSESSION"
-            class="flex flex-col items-center gap-4 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl transform transition hover:scale-105"
-        >
-            <div class="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-green-600 dark:text-green-400">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
-                </svg>
+            {{-- Overlay inside x-data scope --}}
+            <div 
+                x-show="!hasInteracted"
+                style="display: none;"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+            >
+                <button 
+                    @click="startListeningSESSION"
+                    class="flex flex-col items-center gap-4 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl transform transition hover:scale-105"
+                >
+                    <div class="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-green-600 dark:text-green-400">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+                        </svg>
+                    </div>
+                    <div class="text-center">
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Dinlemeyi Başlat</h3>
+                        <p class="text-gray-500 dark:text-gray-400">Sesli bildirimleri almak için tıklayın</p>
+                    </div>
+                </button>
             </div>
-            <div class="text-center">
-                <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Dinlemeyi Başlat</h3>
-                <p class="text-gray-500 dark:text-gray-400">Sesli bildirimleri almak için tıklayın</p>
-            </div>
-        </button>
+        </div>
     </div>
 
     @push('scripts')
     <script>
-        function issueListener() {
-            return {
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('issueListener', () => ({
                 soundEnabled: true,
                 showAlert: true,
                 hasInteracted: false,
@@ -240,10 +241,6 @@
                     if (saved !== null) {
                         this.soundEnabled = saved === 'true';
                     }
-                    
-                    // Check if we already have interaction (session storage maybe? or just always force for safety)
-                    // For reliable audio, we always ask on page load unless we can detect it.
-                    // But to be safe, let's show the overlay.
                 },
 
                 startListeningSESSION() {
@@ -337,7 +334,7 @@
                     
                     if (issue.voice_text) {
                         // Use the server-provided custom message
-                        var utterance = new SpeechSynthesisUtterance(issue.voice_text);
+                        const utterance = new SpeechSynthesisUtterance(issue.voice_text);
                         utterance.lang = 'tr-TR';
                         utterance.rate = 1.0; 
                         utterance.pitch = 1;
@@ -395,8 +392,8 @@
 
                     speechSynthesis.speak(utterance);
                 }
-            };
-        }
+            }));
+        });
     </script>
     @endpush
 </x-filament-panels::page>
