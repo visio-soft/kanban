@@ -3,6 +3,7 @@
 namespace Visiosoft\Kanban\Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 use Visiosoft\Kanban\Models\Board;
 use Visiosoft\Kanban\Models\Issue;
 
@@ -10,6 +11,12 @@ class KanbanSeeder extends Seeder
 {
     public function run(): void
     {
+        // Check if the boards table exists before seeding
+        if (!Schema::hasTable('boards')) {
+            $this->command->warn('Boards table does not exist yet. Skipping KanbanSeeder.');
+            return;
+        }
+
         // Create Boards
         $boards = [
             [

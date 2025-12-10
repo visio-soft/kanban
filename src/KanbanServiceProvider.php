@@ -23,6 +23,7 @@ class KanbanServiceProvider extends ServiceProvider
     {
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'kanban');
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
 
         // Register Livewire components from package
         if (class_exists(\Livewire\Livewire::class)) {
